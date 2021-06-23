@@ -34,4 +34,18 @@ https://www.mgmt.cloud.vmware.com/li/query/stream?query=%C2%A7%C2%A7%C2%A7AND%C2
 ![](images/2021-06-23-11-50-41.png)
 
 
-1.  all metrics that have this point tag will now have a link under `log integrations` click that link and it will inject the value from `nodename` into the query string for VRLIC and launch a new window. Notice we are mapping the point tag `nodename` to the field in VRLIC `kubernetes_host`
+2.  all metrics that have this point tag will now have a link under `log integrations` click that link and it will inject the value from `nodename` into the query string for VRLIC and launch a new window. Notice we are mapping the point tag `nodename` to the field in VRLIC `kubernetes_host`
+
+
+### Setup an external link to query logs based on pod
+
+
+1. create a new external link for log integration, this will add a regex match to only show the link when the `pod_name` point tag exists. here is the raw query to use
+
+```
+https://www.mgmt.cloud.vmware.com/li/query/stream?query=%C2%A7%C2%A7%C2%A7AND%C2%A7%C2%A7%C2%A7%C2%A7{{startEpochMillis}}%C2%A7{{endEpochMillis}}%C2%A7true%C2%A7COUNT%C2%A7*%C2%A7timestamp%C2%A7pageSortPreference:%7B%22sortBy%22%3A%22ingest_timestamp%22%2C%22sortOrder%22%3A%22DESC%22%7D%C2%A7%C2%A7kubernetes_pod_name:CONTAINS:{{pod_name}}
+```
+
+![](images/2021-06-23-12-08-01.png)
+
+2.  all metrics that have this point tag will now have a link under `log integrations` click that link and it will inject the value from `pod_name` into the query string for VRLIC and launch a new window. Notice we are mapping the point tag `pod_name` to the field in VRLIC `kubernetes_pod_name`
