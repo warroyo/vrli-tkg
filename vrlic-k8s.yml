@@ -134,7 +134,7 @@ data:
         </pattern>
       </parse>
     </source>
-    
+
     # Detect exceptions in the log output and forward them as one log entry.
     <match raw.kubernetes.**>
       @id raw.kubernetes
@@ -146,7 +146,16 @@ data:
       max_bytes 500000
       max_lines 1000
     </match>
-    
+
+    # Concatenate multi-line logs
+    <filter kubernetes.**>
+      @id filter_concat
+      @type concat
+      key message
+      multiline_end_regexp /\n$/
+      separator ""
+    </filter>
+
     <filter kubernetes.**>
       @type record_transformer
       <record>
@@ -155,25 +164,30 @@ data:
       </record>
       watch false
     </filter>
-    
+
     # Enriches records with Kubernetes metadata
     <filter kubernetes.**>
       @id filter_kubernetes_metadata
       @type kubernetes_metadata
       watch false
     </filter>
-    
-    <match **>
-      @type vmware_loginsight
-      scheme https
-      ssl_verify false
-      host <LOGINSIGHT-IP>
-      port 9543
-      http_method post
-      serializer json
-      rate_limit_msec 0
-      raise_on_error true
-      include_tag_key true
-      tag_key tag
-      http_conn_debug false
+
+    <match kubernetes.**>
+      @type vmware_log_intelligence
+      endpoint_url https://data.mgmt.cloud.vmware.com/le-mans/v1/streams/ingestion-pipeline-stream
+      verify_ssl false
+      <headers>
+        Content-Type application/json
+        Authorization Bearer <API_KEY>
+        structure simple
+      </headers>
+      <buffer>
+        chunk_limit_records 300
+        flush_interval 3s
+        retry_max_times 3
+      </buffer>
+      <format>
+        @type json
+        tag_key text
+      </format>
     </match>
