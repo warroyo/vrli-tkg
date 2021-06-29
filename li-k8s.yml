@@ -71,6 +71,8 @@ spec:
        env:
        - name: FLUENTD_ARGS
          value: --no-supervisor -q
+       - name: CLUSTER_NAME
+         value: "<CLUSTER_NAME>"
        resources:
          limits:
            memory: 500Mi
@@ -162,7 +164,14 @@ data:
       @type kubernetes_metadata
       watch false
     </filter>
-    
+    # adds k8s cluster name from env var
+    <filter kubernetes.**>
+      @type record_transformer
+      <record>
+        kubernetes_cluster_name "#{ENV['CLUSTER_NAME']}"
+      </record>
+    </filter>
+
     <match **>
       @type vmware_loginsight
       scheme https
